@@ -1,6 +1,7 @@
 import csv
 import os
 import langid
+from langid import classify  # Import langid for language detection
 import requests
 from queue import Queue
 from urllib.parse import urljoin, urlparse
@@ -82,27 +83,35 @@ class WebCrawler:
             writer = csv.writer(csvfile)
             writer.writerow(["URL", "Out-links"])
 
-            while not self.to_crawl.empty() and len(self.visited_urls) < self.max_pages:
+            doc_count = 0  # Initialize document count
+
+            while not self.to_crawl.empty():
+                if len(self.visited_urls) >= self.max_pages:
+                    break  # Stop crawling if the page limit is reached
+
                 url = self.to_crawl.get()
                 if url in self.visited_urls:
                     continue
 
-                print(f"Crawling: {url}")
+                print(f"[{doc_count + 1}] Crawling: {url}")  # Add doc count to status message
                 html_content = download_page(url)
-                if not html_content: #if html_content is None
+                if not html_content:  # if html_content is None
                     continue
 
-                #print(detect_language(html_content))
-                if detect_language(html_content) != self.language:
-                    continue
+                # Detect language using langid
+                detected_lang, _ = classify(html_content)
+                if detected_lang != self.language:
+                    print(f"Skipping URL {url} due to language mismatch: {detected_lang}")
+                    continue  # Skip this page if the language doesn't match
 
                 self.visited_urls.add(url)
+                doc_count += 1  # Increment document count only for successfully visited pages
                 self.save_page(url, html_content)
                 out_links = self.extract_links(html_content, url)
 
-                #write url to report.csv
+                # write url to report.csv
                 writer.writerow([url, len(out_links)])
-                
+
                 for link in out_links:
                     if link not in self.visited_urls:
                         self.to_crawl.put(link)
