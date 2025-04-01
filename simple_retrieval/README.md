@@ -1,6 +1,6 @@
 # How to Use `simple_retrieval.py`
 
-This script implements a simple search system using a boolean retrieval system (logical AND is performed). It takes a user's query, processes it, and returns relevant documents from a pre-built inverted index. The inverted index is loaded from a pickle file (`inverted_index2.pkl`), and the results are displayed by extracting titles from HTML documents stored locally.
+This script implements a simple search system using a boolean retrieval system (logical AND is performed). It takes a user's query, processes it, and returns relevant documents from a pre-built inverted index. The inverted index is loaded from a pickle file (`inverted_index_2.pkl`), and the results are displayed by extracting titles from HTML documents stored locally.
 
 ## Prerequisites:
 - **Python 3**: This script requires Python 3 to run.
@@ -12,7 +12,7 @@ This script implements a simple search system using a boolean retrieval system (
 ## Steps to Use:
 1. **Prepare the Environment:**
    - Ensure you have the following:
-     - A pre-built **inverted index** saved as `inverted_index2.pkl`.
+     - A pre-built **inverted index** saved as `inverted_index_2.pkl`.
      - HTML files representing documents stored in a folder named `repository_wikipedia_crawl_without_hashing/`.
 
 2. **Run the Script:**
