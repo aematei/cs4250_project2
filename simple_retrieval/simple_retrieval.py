@@ -56,8 +56,8 @@ def show_relevant_docs(docs):
     result = "" # stores titles of relevant documents
     # iterate over docs and get their titles
     for doc in docs:
-        # open doc and use BeautifulSoup to get its ttle
-        soup = BeautifulSoup(open(f"repository_wikipedia_crawl/{doc}"), "html.parser")
+        # open doc and use BeautifulSoup to get its title
+        soup = BeautifulSoup(open(f"repository_wikipedia_crawl_without_hashing/{doc}", errors="ignore"), "html.parser")
         # append doc's title to result string
         result += f"\"{soup.title.string}\", "
     os.chdir(current_dir) # change back to original directory
@@ -67,8 +67,7 @@ def show_relevant_docs(docs):
 def main():
     """main function to handle query and search process"""
     # load inverted index
-    inverted_index = pickle.load(open("inverted_index.pkl", "rb"))
-    #print(inverted_index)
+    inverted_index = pickle.load(open("inverted_index_2.pkl", "rb"))
 
     # initialize stemmer and stop words
     stemmer = PorterStemmer()
@@ -77,12 +76,9 @@ def main():
     # get user query, splite into terms, then process it
     query = input("Enter your query search here: ")
     query_terms = query.split()
-    #print(query_terms)
     query_terms = [stemmer.stem(term) for term in query_terms]
-    #print(query_terms)
     # resource used: https://www.geeksforgeeks.org/removing-stop-words-nltk-python/
     query_terms = [term for term in query_terms if not term.lower() in stop_words]
-    #print(query_terms)
 
     # find relevant docs for query terms
     relevant_docs = find_relevant_docs(inverted_index, query_terms)
@@ -90,10 +86,11 @@ def main():
     # if relevant docs found, find docs with all query terms
     if relevant_docs:
         docs_all_terms = find_docs_with_all_queries(relevant_docs)
-        # print(ind)
-        # print(docs_all_terms)
         show_relevant_docs(docs_all_terms)    
     else:
         print("Please type a different query.")
 
-main() # call main function
+if __name__ == "__main__":
+    while True:
+        main()
+        print("\n", end="")# call main function

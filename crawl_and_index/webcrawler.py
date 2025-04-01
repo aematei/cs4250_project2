@@ -1,12 +1,11 @@
 import csv
+import string
 import os
-import langid
 from langid import classify  # Import langid for language detection
 import requests
 from queue import Queue
 from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
-
 
 def download_page(url):
     """Download and save the HTML content of the page.
@@ -21,17 +20,17 @@ def download_page(url):
         print(f"Failed to download {url}: {e}")
         return None
 
+def is_a_duplicate(text):
+    """Checks for duplicate urls within wikipedia"""
+    url_duplicates = ["#cite_note", "#cite_ref", "#CITEREF", "Special", "#", "wlittle=", "%", "index.php", "File:", "Tanjung_Malim", "Gabriela_Duarte"]
 
-def detect_language(text):
-    """Using the langid library, it returns the language of a string sequence \n
-    :argument text: the text to identify \n
-    :returns language of given input
-    """
-    if text is None or text == "":
-        return None
+    for url_duplicate in url_duplicates:
+        if text.find(url_duplicate) != -1:
+            return True
+        else:
+            continue
 
-    return langid.classify(text)[0]
-
+    return False
 
 class WebCrawler:
     def __init__(self, seed_urls, allowed_domains, crawl_id, max_pages=50, language="en"):
@@ -53,16 +52,23 @@ class WebCrawler:
         parsed_url = urlparse(url)
         return any(domain in parsed_url.netloc for domain in self.allowed_domains)
 
-    def save_page(self, url, content):
+    def save_page(self, url, content, hashed = False):
         """Save the HTML page to the repository.
         :argument url: The URL to save.
         :argument content: The HTML content to save."""
-        filename = os.path.join(self.repository_path, f"{hash(url)}.html")
+        if hashed:
+            filename = os.path.join(self.repository_path, f"{hash(url)}.html")
+        else:
+            page_name = url.replace("https:", "").replace(".html", "").replace("//en.wikipedia.org/","").replace("wiki/", "")
+            for char in ['/', ':', '*', '?', '<', '>', '\"', "|"]: #prevent error no 22
+                page_name = page_name.replace(char, "")
+            filename = os.path.join(self.repository_path, f"{page_name[:63]}.html")
+
         with open(filename, "w", encoding="utf-8") as file:
             file.write(content)
 
     def extract_links(self, html, base_url):
-        """Extract and return all valid outlinks from a page.
+        """Extract and return all valid out-links from a page.
         :argument html: The HTML page to extract links from.
         :argument base_url: The URL to extract links from.
         :returns links extracted."""
@@ -83,31 +89,34 @@ class WebCrawler:
             writer = csv.writer(csvfile)
             writer.writerow(["URL", "Out-links"])
 
-            doc_count = 0  # Initialize document count
+            doc_count = 1  # Initialize document count
 
             while not self.to_crawl.empty():
                 if len(self.visited_urls) >= self.max_pages:
-                    break  # Stop crawling if the page limit is reached
+                    break #break if we've reached over our count for pages
 
                 url = self.to_crawl.get()
                 if url in self.visited_urls:
                     continue
 
-                print(f"[{doc_count + 1}] Crawling: {url}")  # Add doc count to status message
+                if is_a_duplicate(url):
+                    continue
+
+                print(f"[{doc_count}] Crawling: {url}")  # Add doc count to status message
                 html_content = download_page(url)
                 if not html_content:  # if html_content is None
                     continue
 
                 # Detect language using langid
-                detected_lang, _ = classify(html_content)
-                if detected_lang != self.language:
-                    print(f"Skipping URL {url} due to language mismatch: {detected_lang}")
+                if classify(html_content)[0] != self.language:
+                    print(f"Skipping URL {url} due to language mismatch")
                     continue  # Skip this page if the language doesn't match
 
                 self.visited_urls.add(url)
-                doc_count += 1  # Increment document count only for successfully visited pages
                 self.save_page(url, html_content)
                 out_links = self.extract_links(html_content, url)
+
+                doc_count += 1  # Increment document count only for successfully visited pages
 
                 # write url to report.csv
                 writer.writerow([url, len(out_links)])
