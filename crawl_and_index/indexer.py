@@ -21,7 +21,7 @@ SEED_URLS = ["https://en.wikipedia.org/wiki/Everything", "https://en.wikipedia.o
 LANGUAGE = "en"
 ALLOWED_DOMAINS = [f"{LANGUAGE}.wikipedia.org"]
 CRAWL_ID = "wikipedia_crawl_with_link_tracker"
-MAX_PAGES = 10
+MAX_PAGES = 500
 INVERTED_INDEX_FILENAME = "inverted_index_3.pkl"
 
 
