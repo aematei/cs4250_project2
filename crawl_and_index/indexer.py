@@ -88,12 +88,37 @@ def process_repository(directory):
 
     return inverted_index
 
+def generate_index(directory):
+    """
+    This function generates an index based on the given directory.
+    """
+    index = {}  # dictionary to store the inverted index
+    page_count = 0  # counter for the number of pages read
+
+    for filename in os.listdir(directory):
+        if filename.endswith(".html"):
+            page_count += 1  # increment the page count
+            file_path = os.path.join(directory, filename)
+            print(f"[{page_count}] Processing {file_path}")  # print the page count and file being processed
+            try:
+                stemmed_frequencies = process_document(file_path)  # process the document
+            except AttributeError as e:
+                print(f"Error processing document {file_path}: {e}")
+                continue  # skips processing/indexing if the document fails
+
+            # Update the index
+            index[filename] = stemmed_frequencies
+    return index
+
 
 def main():
     try:
         crawl()  # Uncomment to crawl
         inverted_index = process_repository(f"repository_{CRAWL_ID}")  # Process the repository
         pickle.dump(inverted_index, open(f"{INVERTED_INDEX_FILENAME}", "wb"))  # Save the inverted index to a file
+
+        #index = generate_index(f"repository_{CRAWL_ID}") #generate an index
+        #pickle.dump(index, open(f"index_{INVERTED_INDEX_FILENAME}", "wb")) #save the index in a file
     except Exception as e:
         print(f"Error: {e}")
 

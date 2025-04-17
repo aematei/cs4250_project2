@@ -57,7 +57,7 @@ def show_relevant_docs(docs):
     # iterate over docs and get their titles
     for doc in docs:
         # open doc and use BeautifulSoup to get its title
-        soup = BeautifulSoup(open(f"repository_wikipedia_crawl_without_hashing/{doc}", errors="ignore"), "html.parser")
+        soup = BeautifulSoup(open(f"repository_wikipedia_crawl_with_link_tracker/{doc}", errors="ignore"), "html.parser")
         # append doc's title to result string
         result += f"\"{soup.title.string}\", "
     os.chdir(current_dir) # change back to original directory
@@ -67,7 +67,7 @@ def show_relevant_docs(docs):
 def main():
     """main function to handle query and search process"""
     # load inverted index
-    inverted_index = pickle.load(open("inverted_index_2.pkl", "rb"))
+    inverted_index = pickle.load(open("../crawl_and_index/inverted_index_3.pkl", "rb"))
 
     # initialize stemmer and stop words
     stemmer = PorterStemmer()

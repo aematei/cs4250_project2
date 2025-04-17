@@ -27,7 +27,7 @@ This script crawls web pages, processes their HTML content, and creates an inver
    - To use the inverted index in another script:
      ```python
      import pickle
-     inverted_index = pickle.load(open("inverted_index.pkl", "rb"))
+     inverted_index = pickle.load(open("inverted_index_3.pkl", "rb"))
      ```
    - To use the link tracker in another script:
      ```python

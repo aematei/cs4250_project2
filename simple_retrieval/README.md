@@ -12,8 +12,8 @@ This script implements a simple search system using a boolean retrieval system (
 ## Steps to Use:
 1. **Prepare the Environment:**
    - Ensure you have the following:
-     - A pre-built **inverted index** saved as `inverted_index_2.pkl`.
-     - HTML files representing documents stored in a folder named `repository_wikipedia_crawl_without_hashing/`.
+     - A pre-built **inverted index** saved as `inverted_index_3.pkl`.
+     - HTML files representing documents stored in a folder named `repository_wikipedia_crawl_with_link_tracker/`.
 
 2. **Run the Script:**
    - Change directories into `simple_retrieval`.
