@@ -172,7 +172,7 @@ class QueryTermWeights:
 
         return (qf_i * (k_2 + 1)) / (k_2 + qf_i)
 
-def calculate_BM25(query_list, query_term, document_rank, inverted_index=None, document_lengths=None):
+def calculate_BM25(query_list, query_term, document_rank, inverted_index=None, document_lengths=None, pagerank_scores=None):
     """Calculates the BM25 scores given a query term
     :param query_list: The list of query terms seperated by a space
     :param query_term: The term used to calculate the BM25 score
@@ -201,6 +201,10 @@ def calculate_BM25(query_list, query_term, document_rank, inverted_index=None, d
             document_rank[web_page] += BM25_score
         except KeyError:
             document_rank[web_page] = BM25_score
+        
+        # Apply PageRank in the scoring
+        pr_score = pagerank_scores.get(web_page, 0)
+        BM25_score *= pr_score
 
     return document_rank
 
@@ -224,6 +228,15 @@ def main():
     inverted_index = pickle.load(open("../crawl_and_index/inverted_index_3.pkl", "rb"))  # open the index
     document_lengths = pickle.load(open("bm25_document_lengths.pkl", "rb"))  #preload the document lengths
 
+    '''
+    Combine BM25 with PageRank 
+    '''
+    # Load PageRank
+    import pandas as pd
+    pagerank_df = pd.read_csv("pagerank_results.csv")  
+    pagerank_df["page"] = pagerank_df["page"].apply(lambda x: f"{x}.html")
+    pagerank_scores = dict(zip(pagerank_df["page"], pagerank_df["rank"]))
+
     # initialize porter stemmer and stop words
     porter_stem = PorterStemmer()
     stop_words = set(stopwords.words('english'))
@@ -236,7 +249,8 @@ def main():
     start_time = time.time()
     document_rank = dict()
     for term in query_terms_stopped:
-        document_rank = calculate_BM25(query_list=query_terms_stopped, query_term = term, document_rank=document_rank, inverted_index=inverted_index, document_lengths=document_lengths)
+        # Modify the function by adding PageRank
+        document_rank = calculate_BM25(query_list=query_terms_stopped, query_term = term, document_rank=document_rank, inverted_index=inverted_index, document_lengths=document_lengths, pagerank_scores=pagerank_scores)
 
     document_rank = sorted(document_rank.items(), key=lambda x: x[1], reverse=True) #sort the documents by BM25 score
     end_time = start_time - time.time()
@@ -250,6 +264,9 @@ def main():
         more_results = bool(input("\nDo you want more results? Type 'yes' or leave blank"))
         if not more_results:
             break
+    
+
+  
 
 if __name__ == '__main__':
     main()
